@@ -1,0 +1,8 @@
+Flask
+Flask-Cors
+requests
+pandas
+matplotlib
+seaborn
+lida
+mpld3

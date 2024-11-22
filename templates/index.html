@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPT Simulation Page</title>
+  <style>
+    /* Reset styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+
+    /* Top input and output section */
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 20px;
+      background: linear-gradient(135deg, #ffffff, #f8f9fa);
+      border-bottom: 1px solid #dfe3e8;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      gap: 20px;
+      border-radius: 8px;
+      margin: 20px;
+    }
+
+    /* Left part: Input and file upload */
+    .input-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    .input-section input[type="file"] {
+      flex: 0.4;
+      padding: 6px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      height: 40px;
+      font-size: 0.9em;
+      color: #495057;
+      background-color: #ffffff;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.2s;
+    }
+
+    .input-section input[type="file"]:hover {
+      border-color: #adb5bd;
+    }
+
+    .input-section input[type="text"] {
+      flex: 1.8;
+      padding: 0 12px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      height: 40px;
+      font-size: 1em;
+      color: #495057;
+      background-color: #ffffff;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      transition: border-color 0.2s;
+    }
+
+    .input-section input[type="text"]:hover {
+      border-color: #adb5bd;
+    }
+
+    .input-section button {
+      padding: 0 20px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1em;
+      height: 40px;
+      transition: background-color 0.3s, transform 0.1s;
+      box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+    }
+
+    .input-section button:hover {
+      background-color: #0056b3;
+      transform: scale(1.05);
+    }
+
+    /* Right part: Display backend text content */
+    .top-output-box {
+      flex-basis: 100%;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.05);
+      font-size: 1em;
+      color: #444;
+      line-height: 1.5;
+      overflow-y: auto;
+      height: 40px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      flex-basis: 100%;
+      margin-top: 10px;
+      height: 20px;
+      background-color: #e9ecef;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar-inner {
+      height: 100%;
+      width: 0;
+      background-color: #007bff;
+      transition: width 0.4s ease;
+    }
+
+    /* Middle display area */
+    .display-container {
+      display: flex;
+      justify-content: space-between;
+      flex: 1;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    .display-box {
+      flex: 1;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+      font-size: 1em;
+      color: #333;
+      min-height: 200px;
+      /* Ensure enough display space */
+      transition: transform 0.1s;
+    }
+
+    #displayBox1,
+    #displayBox2,
+    #displayBox3 {
+      width: 100%;
+      /* Full width within container */
+      max-width: 800px;
+      /* Adjust based on page layout */
+      height: 500px;
+      /* Fixed height for uniformity */
+      margin: 0 auto;
+      padding: 5px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .display-box:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Question/score output box style */
+    .question-output {
+      background-color: #e9ecef;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      font-size: 1em;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    /* Bottom output box */
+    .output-box {
+      margin: 20px;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      font-size: 1.1em;
+      line-height: 1.5;
+      color: #444;
+      overflow-y: auto;
+      min-height: 100px;
+    }
+  </style>
+  <script src="https://d3js.org/d3.v5.js"></script>
+  <script src="https://mpld3.github.io/js/mpld3.v0.5.10.js"></script>
+</head>
+
+<body>
+
+  <!-- Top input and output section -->
+  <div class="top-bar">
+    <div class="input-section">
+      <input type="file" id="fileInput" placeholder="Please upload a file">
+      <input type="text" id="questionInput" placeholder="Please enter your question">
+      <button onclick="submitSummary()">Data Summary</button>
+      <button onclick="submitQuestionSplit()">Question Split</button>
+      <button onclick="generateAnswer()">Generate Answer</button>
+    </div>
+    <div class="top-output-box" id="topOutputBox">Dataset description will be displayed here</div>
+    <div class="progress-bar">
+      <div class="progress-bar-inner" id="progressBarInner"></div>
+    </div>
+  </div>
+
+  <!-- Middle display area -->
+  <div class="display-container">
+    <div class="display-box">
+      <div class="question-output" id="questionOutput1">Question 1 will be displayed here</div>
+      <div id="displayBox1">Display Content 1</div>
+    </div>
+    <div class="display-box">
+      <div class="question-output" id="questionOutput2">Question 2 will be displayed here</div>
+      <div id="displayBox2">Display Content 2</div>
+    </div>
+    <div class="display-box">
+      <div class="question-output" id="questionOutput3">Question 3 will be displayed here</div>
+      <div id="displayBox3">Display Content 3</div>
+    </div>
+  </div>
+
+  <!-- Bottom output box -->
+  <div class="output-box" id="conclusionBox">Final Conclusion</div>
+
+  <script>
+    async function submitSummary() {
+      const question = document.getElementById("questionInput").value;
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+
+      if (!file || !question) {
+        alert("Please provide a file and question content.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("question", question);
+      formData.append("file", file);
+
+      updateProgressBar(20);
+
+      try {
+        const response = await fetch('/summarize', {
+          method: 'POST',
+          body: formData
+        });
+
+        updateProgressBar(60);
+
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById("topOutputBox").innerText = data.summary;
+          updateProgressBar(100);
+        } else {
+          const error = await response.json();
+          alert(error.error);
+          updateProgressBar(0);
+        }
+      } catch (error) {
+        console.error("An error occurred during submission:", error);
+        alert("An error occurred during submission, please try again later.");
+        updateProgressBar(0);
+      }
+    }
+
+    async function submitQuestionSplit() {
+      const question = document.getElementById("questionInput").value;
+
+      updateProgressBar(20);
+
+      try {
+        const response = await fetch('/split_question', {
+          method: 'POST',
+          body: new URLSearchParams({ question })
+        });
+
+        updateProgressBar(60);
+
+        if (response.ok) {
+          const data = await response.json();
+          document.getElementById("questionOutput1").innerText = data.question1;
+          document.getElementById("questionOutput2").innerText = data.question2;
+          document.getElementById("questionOutput3").innerText = data.question3;
+          updateProgressBar(100);
+        } else {
+          const error = await response.json();
+          alert(error.error);
+          updateProgressBar(0);
+        }
+      } catch (error) {
+        console.error("An error occurred during submission:", error);
+        alert("An error occurred during submission, please try again later.");
+        updateProgressBar(0);
+      }
+    }
+
+    async function generateAnswer() {
+      updateProgressBar(20);
+
+      try {
+        const response = await fetch('/generate_answer', {
+          method: 'POST'
+        });
+
+        updateProgressBar(60);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          document.getElementById("questionOutput1").innerText = `ChartType: ${data.chartType1}, Score: ${data.score1}`;
+          document.getElementById("questionOutput2").innerText = `ChartType: ${data.chartType2}, Score: ${data.score2}`;
+          document.getElementById("questionOutput3").innerText = `ChartType: ${data.chartType3}, Score: ${data.score3}`;
+          console.log("html1", data.html1)
+          console.log("html2", data.html2)
+          console.log("html3", data.html3)
+          // Insert HTML with error handling for each displayBox
+          try {
+            insertHTMLWithScripts("displayBox1", data.html1);
+          } catch (error) {
+            console.error("Error inserting content for displayBox1:", error);
+          }
+
+          try {
+            insertHTMLWithScripts("displayBox2", data.html2);
+          } catch (error) {
+            console.error("Error inserting content for displayBox2:", error);
+          }
+
+          try {
+            insertHTMLWithScripts("displayBox3", data.html3);
+          } catch (error) {
+            console.error("Error inserting content for displayBox3:", error);
+          }
+          
+          document.getElementById("conclusionBox").innerText = data.summary;
+          updateProgressBar(100);
+        } else {
+          const error = await response.json();
+          alert(error.error);
+          updateProgressBar(0);
+        }
+      } catch (error) {
+        console.error("An error occurred during submission:", error);
+        alert("An error occurred during submission, please try again later.");
+        updateProgressBar(0);
+      }
+    }
+
+    function updateProgressBar(percentage) {
+      const progressBarInner = document.getElementById("progressBarInner");
+      progressBarInner.style.width = percentage + "%";
+    }
+
+    function insertHTMLWithScripts(containerId, htmlContent) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = ""; // Clear any previous content
+
+      // Dynamically set width and height to match the displayBox dimensions
+      const displayBoxWidth = container.clientWidth;
+      const displayBoxHeight = container.clientHeight;
+
+      // Adjust width and height within the injected HTML
+      const adjustedHtmlContent = htmlContent
+          .replace(/"width":\s*\d+(\.\d+)?/g, `"width": ${displayBoxWidth}`)
+          .replace(/"height":\s*\d+(\.\d+)?/g, `"height": ${displayBoxHeight}`);
+
+      // Create a wrapper to encapsulate and align the backend HTML content
+      const wrapper = document.createElement('div');
+      wrapper.style.width = '100%';
+      wrapper.style.height = '100%';
+      wrapper.innerHTML = adjustedHtmlContent.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "");
+
+      // Inject styles from the backend HTML into the document head for consistent styling
+      const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+      let styleMatch;
+      while ((styleMatch = styleRegex.exec(adjustedHtmlContent)) !== null) {
+          const styleTag = document.createElement("style");
+          styleTag.textContent = styleMatch[1];
+          document.head.appendChild(styleTag);
+      }
+
+      // Append the wrapper with the HTML content to the specified container
+      container.appendChild(wrapper);
+
+      // Extract and execute any script tags in the HTML content for proper functionality
+      const scriptRegex = /<script[^>]*>([\s\S]*?)<\/script>/gi;
+      let scriptMatch;
+      while ((scriptMatch = scriptRegex.exec(adjustedHtmlContent)) !== null) {
+          const scriptTag = document.createElement("script");
+          scriptTag.textContent = scriptMatch[1];
+          document.body.appendChild(scriptTag);
+      }
+    }
+  </script>
+</body>
+
+</html>
